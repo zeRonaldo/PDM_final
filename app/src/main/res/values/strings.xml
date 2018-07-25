@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">PDM_final</string>
+    <!-- Place activity-->
+    <string name="place_call_to">Ligar</string>
+    <string name="place_navigate_to">Ir para %s</string>
+    <string name="place_error">Fogo na babilônia!!!</string>
+
+    <string name="loadImageURL">https://maps.googleapis.com/maps/api/place/photo?maxHeight=%s&amp;photoreference=%s&amp;key=%s</string>
+    <string name="general_gplace_api">AIzaSyD5KRk3sKASwJnPJI9YTRB4PZfQmjHTD_0</string>
+    <string name="title_activity_side_bar">SideBarActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+</resources>
