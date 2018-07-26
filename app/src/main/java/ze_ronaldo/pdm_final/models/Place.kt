@@ -1,47 +1,28 @@
 package ze_ronaldo.pdm_final.models
 
 
-
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlaceGeometry
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlacePhoto
 
 
 import java.io.Serializable
 
 @Entity(tableName = "place")
-class Place(
-    val name: String,
-    @SerializedName("vicinity")
-        val address: String,
-    val description: String?,
-    @SerializedName("formatted_phone_number")
-        val telephoneNumber: String?,
-    val geometry: Geometry,
-    @PrimaryKey
-    @SerializedName("place_id")
-        val placeId: String,
-    val rating: Float,
-    val photos: List<Photo>?
-
-) : Serializable  {
-
-    //Getters
-    fun getLat(): String{
-        return this.geometry.location.lat
-    }
-    fun getLng(): String{
-        return this.geometry.location.lng
-    }
-    fun getPhotoRef(num: Int):String{
-        if (this.photos?.get(num)  != null){
-        val photoRef = this.photos.get(num).photoRefence
-            return  photoRef
-        }else{
-            return ""
-        }
-    }
-
+data class Place(
+    @PrimaryKey var placeId: String,
+    var address: String?,
+    var telephoneNumber: String?,
+    var name: String,
+    var description: String?,
+    var rating: Float,
+    var latitude: String,
+    var longitude: String,
+    var firstImage: String?,
+    var secondImage: String?
+) : Serializable {
 
     //ToString
     override fun toString(): String {
@@ -50,7 +31,7 @@ class Place(
                 "\n Descrição: ${description} " +
                 "\n Telefone: ${telephoneNumber}" +
                 "\n Classificação: ${rating}" +
-                "\n Coordenadas: Lat(${getLat()}) , Lon(${getLng()})" +
+                "\n Coordenadas: Lat($latitude) , Lon($longitude)" +
                 "\n ID: ${placeId}"
     }
 }

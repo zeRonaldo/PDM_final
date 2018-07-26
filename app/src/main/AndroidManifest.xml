@@ -1,33 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="ze_ronaldo.pdm_final">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
-        android:allowBackup="true"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="Acaso"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".activities.MainActivity">
+        android:theme="@style/AppTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+
+        <activity
+            android:name=".activities.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.PlaceActivity"
             android:parentActivityName=".activities.MainActivity" />
+
         <activity android:name=".activities.OptionActivity" />
+
         <activity
             android:name=".activities.SideBarActivity"
             android:label="@string/title_activity_side_bar"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.FavoritesActivity"></activity>
+
+        <activity
+            android:label="@string/favorites_title"
+            android:name=".activities.FavoritesActivity"
+            android:parentActivityName=".activities.MainActivity"/>
     </application>
 
 </manifest>

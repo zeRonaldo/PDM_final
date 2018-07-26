@@ -1,126 +1,163 @@
 package ze_ronaldo.pdm_final.activities
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
+import android.os.AsyncTask
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_place.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import ze_ronaldo.pdm_final.models.Place
 import ze_ronaldo.pdm_final.R
-import ze_ronaldo.pdm_final.R.id.imgRestaurant
-import ze_ronaldo.pdm_final.gplaces.GPlaceResult
+import ze_ronaldo.pdm_final.extensions.loadUrl
 import ze_ronaldo.pdm_final.gplaces.GPlaceServices
-import android.graphics.BitmapFactory
-import com.squareup.picasso.Picasso
-import java.net.URL
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlaceResult
+import ze_ronaldo.pdm_final.models.Place
+import ze_ronaldo.pdm_final.room.PlaceDatabase
 
 
 class PlaceActivity : AppCompatActivity() {
-
-    private lateinit var place: Place
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_place)
 
-        place = requestPlaceById()
-
-        showPlace()
-
-        btCallPlace.setOnClickListener(){
-            callToPlace()
+        val place = intent.extras?.getSerializable(PLACE_EXTRA) as? Place
+        if (place != null) {
+            showPlace(place)
+            requestPlaceById(place.placeId)
+        } else {
+            showError("Lugar nulo ou sem informação de ID")
+            return
         }
-        btGoPlace.setOnClickListener(){
-            goToPlace()
-        }
-
     }
 
-    private fun showPlace() {
+    private fun showPlace(place: Place) {
         println(place.toString())
         tvPlaceName.text = place.name
         tvPlaceAddress.text = place.address
-        rbRating.setRating(place.rating)
+        rbRating.rating = place.rating
         tvRating.text = place.rating.toString()
-            if (place.telephoneNumber != null) {
-                btCallPlace.text = getString(R.string.place_call_to)
-            }else{
-                btCallPlace.setVisibility(View.GONE)
-            }
+
+        callToPlace(place)
+        goToPlace(place)
+
+        RefreshFavoriteAsyncTask().execute(place)
+
+        btFave.setOnClickListener {
+            ToggleFavoriteAsyncTask().execute(place)
+        }
+
+        if (place.telephoneNumber != null) {
+            btCallPlace.text = getString(R.string.place_call_to)
+        } else {
+            btCallPlace.visibility = View.GONE
+        }
+
         btGoPlace.text = getString(R.string.place_navigate_to, place.name)
-        loadImg(getString(R.string.loadImageURL,"400", place?.photos!![0].photoRefence,getString(R.string.general_gplace_api)), imgBGRestaurant)
+
+        place.firstImage?.let { imageUrl ->
+            imgBGRestaurant.loadUrl(
+                getString(
+                    R.string.gmaps_image_url,
+                    "400",
+                    imageUrl,
+                    getString(R.string.general_gplace_api)
+                )
+            )
+        }
+        place.secondImage?.let { imguRL ->
+            imgFGRestaurant.loadUrl(
+                getString(
+                    R.string.gmaps_image_url, "200", imguRL, getString(R.string.general_gplace_api)
+                )
+            )
+        }
+
     }
-    fun loadImg(url:String, imgView:ImageView){
-        Picasso.get().load(url).into(imgView);
-    }
-    fun callToPlace(){
-        if (place.telephoneNumber != null){
-            val uri = Uri.parse("tel:${place.telephoneNumber}")
-            val it = Intent (Intent.ACTION_DIAL, uri)
-            startActivity(it)
-        }else{
-            showErrorWithoutClose("Não foi encontrado um Telefone Válido")
+
+    private fun callToPlace(place: Place) {
+        btCallPlace.setOnClickListener {
+            if (place.telephoneNumber != null) {
+                val uri = Uri.parse("tel:${place.telephoneNumber}")
+                val intent = Intent(Intent.ACTION_DIAL, uri)
+                startActivity(intent)
+            } else {
+                showErrorWithoutClose("Não foi encontrado um Telefone Válido")
+            }
         }
     }
-    fun goToPlace(){
-            val origem = "-7.1356496,-34.8760932"
-            val destino = "${place.geometry.location.lat},${place.geometry.location.lng}"
-            val url = "http://maps.google.com/maps"
-            val uri = Uri.parse("${url}?f=&saddr=${origem}+&daddr=${destino}")
-            val it = Intent(Intent.ACTION_VIEW, uri)
-            startActivity(it)
 
+    private fun goToPlace(place: Place) {
+        val origin = "-7.1356496,-34.8760932"
+        val destination = "${place.latitude},${place.longitude}"
+        val url = "http://maps.google.com/maps"
+        val uri = Uri.parse("${url}?f=&saddr=${origin}+&daddr=${destination}")
+
+        btGoPlace.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        }
     }
-    private fun requestPlaceById() :Place{
-        var place1 = intent.extras?.getSerializable(PLACE_EXTRA) as? Place
-        println("entrando no request")
-        if (place1 != null) {
-            GPlaceServices
-                .request()
-                .getPlaceById(
-                    placeId = place1.placeId,
-                    apiKey = getString(R.string.general_gplace_api)
-                )
-                .enqueue(object : Callback<Place> {
-                    override fun onFailure(call: Call<Place>, t: Throwable) {
-                       showError("Requisição para o Google Place teve um retorno inexperado")
-                    }
 
-                    override fun onResponse(
-                        call: Call<Place>,
-                        response: Response<Place>
-                    ) {
-                        if (response.isSuccessful) {
-                            println("SUCCESS")
-                            response.body()?.let { placeNew ->
-                                place1 = placeNew
+    private fun requestPlaceById(placeId: String) {
+        println("Request $placeId")
 
-                            }
+        GPlaceServices
+            .request()
+            .getPlaceById(
+                placeId = placeId,
+                apiKey = getString(R.string.general_gplace_api)
+            )
+            .enqueue(object : Callback<GPlaceResult> {
+                override fun onFailure(call: Call<GPlaceResult>, t: Throwable) {
+                    showError("Requisição para o Google Place teve um retorno inexperado")
+                }
+
+                override fun onResponse(
+                    call: Call<GPlaceResult>,
+                    response: Response<GPlaceResult>
+                ) {
+                    if (response.isSuccessful) {
+                        println("SUCCESS")
+                        response.body()?.result?.let { placeNew ->
+                            showPlace(placeNew.toPlace())
                         }
                     }
-                })
-
-        }else{
-
-            showError("Lugar nulo ou sem informação de ID")
-
-        }
-        return place1!!
+                }
+            })
     }
 
     private fun showError(error: String) {
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
         finish()
     }
+
     private fun showErrorWithoutClose(error: String) {
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun refreshFavoriteButton(isFavorite: Boolean) {
+        if (isFavorite) {
+            btFave.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this@PlaceActivity,
+                    R.drawable.ic_favorite_black_24dp
+                )
+            )
+        } else {
+            btFave.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this@PlaceActivity,
+                    R.drawable.ic_favorite_border_black_24dp
+                )
+            )
+        }
     }
 
     companion object {
@@ -131,6 +168,56 @@ class PlaceActivity : AppCompatActivity() {
             return Intent(context, PlaceActivity::class.java).apply {
                 putExtra(PLACE_EXTRA, place)
             }
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    inner class RefreshFavoriteAsyncTask : AsyncTask<Place, Void, Boolean>() {
+        private val placesDao = PlaceDatabase.getInstance(this@PlaceActivity)?.placeDAO()
+
+        override fun doInBackground(vararg params: Place): Boolean {
+            val place = params.firstOrNull()
+
+            return if (place != null) {
+                placesDao?.findByID(place.placeId) != null
+            } else {
+                false
+            }
+        }
+
+        override fun onPostExecute(isFavorite: Boolean) {
+            refreshFavoriteButton(isFavorite)
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    inner class ToggleFavoriteAsyncTask : AsyncTask<Place, Void, Boolean>() {
+        private val placesDao = PlaceDatabase.getInstance(this@PlaceActivity)?.placeDAO()
+
+        override fun doInBackground(vararg params: Place): Boolean {
+            val place = params.firstOrNull()
+            if (place != null) {
+                val isFavorite = placesDao?.findByID(place.placeId) != null
+
+                if (isFavorite)
+                    placesDao?.delete(place)
+                else
+                    placesDao?.insertPlace(place)
+
+                println("Favorites ===========")
+                placesDao?.getAll()?.forEach { favoritePlace ->
+                    println("Favorite! ${favoritePlace.name}")
+                }
+                println("===========")
+
+                return !isFavorite
+            } else {
+                return false
+            }
+        }
+
+        override fun onPostExecute(isFavorite: Boolean) {
+            refreshFavoriteButton(isFavorite)
         }
     }
 }

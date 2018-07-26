@@ -1,15 +1,18 @@
 package ze_ronaldo.pdm_final.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ze_ronaldo.pdm_final.R
-import ze_ronaldo.pdm_final.R.id.btGo
-import ze_ronaldo.pdm_final.gplaces.GPlaceResult
+import ze_ronaldo.pdm_final.extensions.disable
+import ze_ronaldo.pdm_final.extensions.enable
 import ze_ronaldo.pdm_final.gplaces.GPlaceServices
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlaceSearchResults
 import ze_ronaldo.pdm_final.models.Place
 
 class MainActivity : AppCompatActivity() {
@@ -18,13 +21,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        progressLoading.visibility = View.INVISIBLE
         btGo.setOnClickListener {
             requestPlacesAPI()
         }
+        btFavorites.setOnClickListener { openFavoritesActv() }
     }
 
     private fun requestPlacesAPI() {
         // Exibir loading
+        progressLoading.visibility = View.VISIBLE
+        btGo.disable()
 
         GPlaceServices
             .request()
@@ -37,19 +44,22 @@ class MainActivity : AppCompatActivity() {
                 priceLevel = 2,
                 apiKey = getString(R.string.general_gplace_api)
             )
-            .enqueue(object : Callback<GPlaceResult> {
-                override fun onFailure(call: Call<GPlaceResult>, t: Throwable) {
-                    // oculta o loading
+            .enqueue(object : Callback<GPlaceSearchResults> {
+                override fun onFailure(call: Call<GPlaceSearchResults>, t: Throwable) {
+                    progressLoading.visibility = View.INVISIBLE
+                    btGo.enable()
                 }
 
                 override fun onResponse(
-                    call: Call<GPlaceResult>,
-                    response: Response<GPlaceResult>
+                    call: Call<GPlaceSearchResults>,
+                    response: Response<GPlaceSearchResults>
                 ) {
-                    // oculta o loading
+                    progressLoading.visibility = View.INVISIBLE
+                    btGo.enable()
+
                     if (response.isSuccessful) {
                         response.body()?.results?.shuffled()?.firstOrNull()?.let { randomPlace ->
-                            openPlaceActv(randomPlace)
+                            openPlaceActv(randomPlace.toPlace())
                         }
                     }
                 }
@@ -59,5 +69,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun openPlaceActv(place: Place) {
         startActivity(PlaceActivity.getCallingIntent(this, place))
+    }
+
+    private fun openFavoritesActv() {
+        startActivity(Intent(this, FavoritesActivity::class.java))
     }
 }

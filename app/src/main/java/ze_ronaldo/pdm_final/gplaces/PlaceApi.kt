@@ -1,11 +1,10 @@
 package ze_ronaldo.pdm_final.gplaces
 
-import android.graphics.Bitmap
 import retrofit2.Call
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
-import ze_ronaldo.pdm_final.models.Place
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlaceResult
+import ze_ronaldo.pdm_final.gplaces.pojos.GPlaceSearchResults
 
 interface PlaceApi {
     companion object {
@@ -21,14 +20,14 @@ interface PlaceApi {
             @Query("type") type: String,
             @Query("price_level") priceLevel: Int,
             @Query("key") apiKey: String
-    ): Call<GPlaceResult>
+    ): Call<GPlaceSearchResults>
 
 
     @GET("/maps/api/place/details/json") // Ajustar URL
     fun getPlaceById(
         @Query("placeid") placeId: String,
         @Query("key") apiKey: String
-    ): Call<Place> // Lembrar de ajustar o resultado
+    ): Call<GPlaceResult> // Lembrar de ajustar o resultado
 
 //    @GET("/maps/api/place/photo")
 //    fun getImg(

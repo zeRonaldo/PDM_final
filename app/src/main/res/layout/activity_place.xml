@@ -1,110 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".activities.PlaceActivity">
-    <RelativeLayout
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/colorPrimary"
-        >
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+
         <ImageView
             android:id="@+id/imgBGRestaurant"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:alpha="0.3"
-            />
+            android:alpha="0.5"
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
             android:layout_margin="15dp"
-            android:gravity="bottom"
-           >
-            <ImageView
-                android:id="@+id/imgRestaurant"
-                android:layout_width="match_parent"
-                android:layout_height="180dp"
-                />
+            android:alpha="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="150dp"
+                android:layout_height="150dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imgFGRestaurant"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    app:civ_border_color="@color/colorAccent"
+                    app:civ_border_width="3dp" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btFave"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="8dp"
+                    app:backgroundTint="@color/white"
+                    app:srcCompat="@drawable/ic_favorite_border_black_24dp" />
+
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/tvPlaceName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nome do restaurante"
-                android:textSize="26dp"
+                android:layout_marginTop="8dp"
                 android:textAlignment="center"
-                />
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                tools:text="Nome do restaurante" />
+
             <TextView
                 android:id="@+id/tvPlaceAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Endereço"
-                android:textSize="16dp"/>
-            <TextView
-                android:id="@+id/tvPlaceDistance"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Distância"
-                android:textSize="16dp"/>
-        </LinearLayout>
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textAlignment="center"
+                tools:text="Endereço" />
 
-    </RelativeLayout>
+        </LinearLayout>
+    </FrameLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="15dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="15dp">
+
         <TextView
             android:id="@+id/tvOpenHours"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="10dp"
             android:text="Aberto até XXh"
-            android:textAlignment="center"
-            android:padding="10dp"/>
+            android:textAlignment="center" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp">
+
             <RatingBar
                 android:id="@+id/rbRating"
-                android:theme="@style/RatingBar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
+                android:isIndicator="true"
                 android:numStars="5"
                 android:stepSize="0.1"
-                android:isIndicator="true"
-                />
+                android:theme="@style/RatingBar" />
+
             <TextView
                 android:id="@+id/tvRating"
                 android:layout_width="match_parent"
 
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="35dp"
                 android:text="4.5"
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:textSize="35dp" />
 
         </LinearLayout>
+
         <Button
             android:id="@+id/btGoPlace"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape"
+            android:layout_height="42dp"
             android:layout_margin="5dp"
-            android:text="Ir Para XXXXX"/>
+            android:background="@drawable/buttonshape"
+            android:text="Ir Para XXXXX"
+            android:textColor="@color/white" />
+
         <Button
             android:id="@+id/btCallPlace"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape"
+            android:layout_height="42dp"
             android:layout_margin="5dp"
-            android:text="Ligar para XXXX"/>
+            android:background="@drawable/buttonshape"
+            android:text="Ligar para XXXX"
+            android:textColor="@color/white" />
     </LinearLayout>
 </LinearLayout>
